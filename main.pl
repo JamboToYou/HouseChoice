@@ -16,7 +16,8 @@
 
 :- dynamic
 	save/0,
-	add_question/2.
+	add_question/2,
+	edit_question/2.
 :- ['model.pl'].
 
 enable_debug_mode:-debug_mode.
@@ -27,33 +28,9 @@ disable_debug_mode:-retract(debug_mode).
 
 interview(QID):-
 	debug_mode,
-	debug_menu,
-	readln([Cmd|_]),
-	debug_command(Cmd, QID).
-
-debug_menu:-
-	write("1: Двигаться дальше"),nl,
-	write("2: Добавить вопрос"),nl,
-	write("3: Добавить терминальный узел"),nl.
-
-debug_command(1, QID):-
-	question(QID, Question, QNodes, RNodes),
-	append(QNodes, RNodes, Nodes),
+	question(QID, Question, _, _),
 	write(Question),nl,
-	enumerate(Nodes, Out),
-	get_user_answer(Out, Answer),
-	react(Answer, QNodes, RNodes ).
-
-debug_command(2, QID):-
-	question(QID, Question, QNodes, RNodes),
-	create_question(NewQNode).
-
-create_question([Answer, QID]):-
-	add_question
-
-
-
-
+	debug_menu(QID).
 interview(QID):-
 	question(QID, Question, QNodes, RNodes),
 	append(QNodes, RNodes, Nodes),
@@ -61,6 +38,37 @@ interview(QID):-
 	enumerate(Nodes, Out),
 	get_user_answer(Out, Answer),
 	react(Answer, QNodes, RNodes).
+
+debug_menu(QID):-
+	write("1: Двигаться дальше"),nl,
+	write("2: Добавить вопрос"),nl,
+	write("3: Добавить терминальный узел"),nl,
+	readln([Cmd|_]),
+	debug_command(Cmd, QID).
+
+debug_command(1, QID):-
+	question(QID, _, QNodes, RNodes),
+	append(QNodes, RNodes, Nodes),
+	enumerate(Nodes, Out),
+	get_user_answer(Out, Answer),
+	react(Answer, QNodes, RNodes).
+
+debug_command(2, QID):-
+	question(QID, Question, QNodes, RNodes),
+	write("Введите новый вариант ответа на текущий вопрос:"),nl,
+	readln([RawA|AT]),atomics_to_string([RawA|AT], " ", Answer),
+	not(member([Answer,_], QNodes)),
+	write("Введите новый вопрос:"),nl,
+	readln([RawQ|QT]),atomics_to_string([RawQ|QT], " ", NewQuestion),
+	add_question(NewQuestion, NewQID),
+	edit_question(QID, [Question, [[Answer,NewQID]|QNodes], RNodes]),
+	write("Вопрос успешно добавлен"),nl.
+debug_command(2, QID):-
+	write("Такой ответ уже есть"),nl,
+	debug_command(2, QID).
+
+debug_command(3, QID):-
+	question(QID, Question, QNodes, RNodes).
 
 react(Answer, QNodes, _ ):-
 	member([Answer, QID], QNodes),

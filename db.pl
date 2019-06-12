@@ -1,8 +1,7 @@
-:- dynamic pred/1.
+:- dynamic
+	question/4,
+	root/1.
 
-to_list([X|L]):-
-	pred(X),
-	retract(pred(X)),
-	to_list(L),
-	assert(pred(X)).
-to_list([]).
+question(1, "Test question", [], []).
+
+root(1).

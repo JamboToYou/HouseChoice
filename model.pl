@@ -11,32 +11,44 @@ save:-
 	write_questions,
 	write_attributes,
 	root(X),
-	write(root(X)),write("."),nl,
+	writeq(root(X)),write("."),nl,
 	told.
 
 write_records:-
 	record(ID, Value),
-	write(record(ID, Value)),write("."),nl,
+	writeq(record(ID, Value)),write("."),nl,
 	fail; true.
 
 write_questions:-
 	question(ID, Value, QNodes, RNodes),
-	write(question(ID, Value, QNodes, RNodes)),write("."),nl,
+	writeq(question(ID, Value, QNodes, RNodes)),write("."),nl,
 	fail; true.
 
 write_attributes:-
 	attribute(ID, Name, Value),
-	write(record(ID, Name, Value)),write("."),nl,
+	writeq(record(ID, Name, Value)),write("."),nl,
 	fail; true.
 
-add_question(Value, QID).
+add_question(Value, NewID):-
+	generate_question_id(NewID),
+	assert(question(NewID, Value, [], [])).
 
+edit_question(QID, [Value, QNodes, RNodes]):-
+	question(QID, OldValue, OldQNodes, OldRNodes),
+	retract(question(QID, OldValue, OldQNodes, OldRNodes)),
+	assert(question(QID, Value, QNodes, RNodes)).
+
+questions_as_list([QID|L]):-
+	question(QID, Question, QNodes, RNodes),
+	retract(question(QID, Question, QNodes, RNodes)),
+	questions_as_list(L),
+	assert(question(QID, Question, QNodes, RNodes)).
+questions_as_list([]).
 
 generate_question_id(ID):-
-	question(ID, _, _, _),
-	ID > ID1,
-	generate_question_id(ID1).
-generate_question_id(0).
+	questions_as_list(Questions),
+	max_list(Questions, MaxID),
+	plus(MaxID, 1, ID).
 
 % getChildrenCount(QID, Cnt):-
 % 	question(QID, _, QNodes, RNodes),
