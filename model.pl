@@ -26,12 +26,16 @@ write_questions:-
 
 write_attributes:-
 	attribute(ID, Name, Value),
-	writeq(record(ID, Name, Value)),write("."),nl,
+	writeq(attribute(ID, Name, Value)),write("."),nl,
 	fail; true.
 
 add_question(Value, NewID):-
 	generate_question_id(NewID),
 	assert(question(NewID, Value, [], [])).
+
+add_record(Value, NewID):-
+	generate_record_id(NewID),
+	assert(record(NewID, Value)).
 
 edit_question(QID, [Value, QNodes, RNodes]):-
 	question(QID, OldValue, OldQNodes, OldRNodes),
@@ -45,9 +49,21 @@ questions_as_list([QID|L]):-
 	assert(question(QID, Question, QNodes, RNodes)).
 questions_as_list([]).
 
+records_as_list([RID|L]):-
+	record(RID, Value),
+	retract(record(RID, Value)),
+	records_as_list(L),
+	assert(record(RID, Value)).
+records_as_list([]).
+
 generate_question_id(ID):-
 	questions_as_list(Questions),
 	max_list(Questions, MaxID),
+	plus(MaxID, 1, ID).
+
+generate_record_id(ID):-
+	records_as_list(Records),
+	max_list(Records, MaxID),
 	plus(MaxID, 1, ID).
 
 % getChildrenCount(QID, Cnt):-
