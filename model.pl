@@ -1,9 +1,10 @@
 :- dynamic
-	root/1,
 	record/2,
 	attribute/3,
 	question/4.
 :-['db.pl'].
+
+root(1).
 
 save:-
 	tell('db.pl'),
